@@ -1,0 +1,17 @@
+{
+  "defaultServer": "willforward",
+  "localWorkspaceRoot": "~/Dev/xserver-sites",
+  "servers": {
+    "willforward": {
+      "host": "willforward.xsrv.jp",
+      "port": 10022,
+      "username": "willforward",
+      "privateKeyPath": "~/.ssh/xserver_willforward",
+      "passphraseEnv": "XSERVER_WILLFORWARD_KEY_PASSPHRASE",
+      "roots": {
+        "willforwardcreate.jp": "/home/willforward/willforwardcreate.jp/public_html",
+        "willforward.co.jp": "/home/willforward/willforward.co.jp/public_html"
+      }
+    }
+  }
+}

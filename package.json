@@ -1,0 +1,22 @@
+{
+  "name": "xserver-files-mcp",
+  "version": "0.1.0",
+  "description": "Local stdio MCP server and CLI for safe XServer file operations over SFTP.",
+  "type": "module",
+  "bin": {
+    "xserver-files-mcp": "./src/server.js",
+    "xserver-files": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "cli": "node src/cli.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "commander": "^14.0.0",
+    "ssh2-sftp-client": "^12.0.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {}
+}

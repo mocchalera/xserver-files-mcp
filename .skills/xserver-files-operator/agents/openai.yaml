@@ -1,0 +1,4 @@
+interface:
+  display_name: "XServer Files Operator"
+  short_description: "Operate this repo MCP and CLI for XServer SFTP file work safely."
+  default_prompt: "Use the xserver-files-operator skill to perform safe XServer file reads, backups, writes, and redirects with this repo MCP/CLI."

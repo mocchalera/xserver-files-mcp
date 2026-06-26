@@ -1,0 +1,8 @@
+node_modules/
+*.log
+.env
+config/local.config.json
+coverage/
+.claude/sessions/
+.claude/state/
+.claude/memory/

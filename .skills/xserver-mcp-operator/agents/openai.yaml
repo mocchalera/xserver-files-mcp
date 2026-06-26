@@ -1,0 +1,4 @@
+interface:
+  display_name: "XServer MCP Operator"
+  short_description: "Use XServer MCP server-panel tools safely."
+  default_prompt: "Use the xserver-mcp-operator skill to inspect XServer state before domain, SSL, DNS, WordPress, mail, FTP, DB, PHP, cron, SSH, or log operations."
