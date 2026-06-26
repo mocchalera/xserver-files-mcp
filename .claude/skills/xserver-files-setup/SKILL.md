@@ -80,7 +80,8 @@ mkdir -p ~/.config/xserver-files-mcp
       "username": "<サーバーID>",
       "privateKeyPath": "~/.ssh/xserver_<サーバーID>",
       "roots": {
-        "<ドメイン>": "<ドキュメントルート or /home/<サーバーID>/<ドメイン>/public_html>"
+        "<ドメイン1>": "<ドキュメントルート or /home/<サーバーID>/<ドメイン1>/public_html>",
+        "<ドメイン2>": "/home/<サーバーID>/<ドメイン2>/public_html"
       }
     }
   }
