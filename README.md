@@ -197,3 +197,5 @@ If omitted, `defaultServer` is used.
 - Local site workspaces are outside this repository by default, under `~/Dev/xserver-sites`.
 - Workspace pull/push excludes high-risk site paths by default: `wp-config.php`, uploads, logs, backups, SQL/database dumps, and archives.
 - Keep private keys outside this project directory.
+- `replaceInFile` and `set_domain_redirect` read, transform, and write in separate SFTP operations. Concurrent edits to the same file by another process may be overwritten. Coordinate edits when multiple operators share a server.
+- Always use `--dry-run` before write operations to preview changes. Follow with `read` to verify the result after applying.
