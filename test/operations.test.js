@@ -54,6 +54,48 @@ describe("operations helpers", () => {
     assert.match(backupPath, /^\/home\/willforward\/site\/public_html\/\.htaccess\.redirect\..+\.bak$/);
   });
 
+  it("generates unique backup timestamps", async () => {
+    const first = makeBackupPath("/path/file.txt", "backup");
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const second = makeBackupPath("/path/file.txt", "backup");
+
+    assert.notEqual(first, second);
+  });
+
+  it("handles dotfile backup paths without double-dotting the basename", () => {
+    const backupPath = makeBackupPath("/path/.htaccess", "redirect");
+
+    assert.equal(backupPath.startsWith("/path/.htaccess."), true);
+    assert.equal(backupPath.startsWith("/path/..htaccess."), false);
+  });
+
+  it("sanitizes backup labels", () => {
+    const backupPath = makeBackupPath("/path/file.txt", "my label/bad");
+    const backupBase = path.posix.basename(backupPath);
+
+    assert.equal(backupBase.includes(" "), false);
+    assert.equal(backupBase.includes("/"), false);
+    assert.match(backupBase, /^\.file\.txt\.my-label-bad\..+\.bak$/);
+  });
+
+  it("returns only a marked block with trailing newline for empty content", () => {
+    const block = "# BEGIN test\nrule\n# END test";
+    const result = upsertMarkedBlock("", "# BEGIN test", "# END test", block);
+
+    assert.equal(result, `${block}\n`);
+  });
+
+  it("preserves content after an existing marked block", () => {
+    const result = upsertMarkedBlock(
+      "# BEGIN test\nold\n# END test\nWordPress rules\nMore stuff",
+      "# BEGIN test",
+      "# END test",
+      "# BEGIN test\nnew\n# END test"
+    );
+
+    assert.equal(result, "# BEGIN test\nnew\n# END test\nWordPress rules\nMore stuff");
+  });
+
   it("resolves local site workspace paths outside the tool repository", () => {
     const workspaceRoot = path.join(os.tmpdir(), "xserver-sites-test");
     const workspace = resolveSiteWorkspace(config, {
