@@ -22,6 +22,19 @@ const server = new McpServer({
   version: "0.1.0"
 });
 
+function handleToolCall(fn) {
+  return async (input) => {
+    try {
+      return await fn(input);
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: error.message }]
+      };
+    }
+  };
+}
+
 function jsonResult(value) {
   return {
     content: [
@@ -69,7 +82,7 @@ server.registerTool(
     inputSchema: {},
     annotations: { readOnlyHint: true, destructiveHint: false }
   },
-  async () => jsonResult(listServers(config()))
+  handleToolCall(async () => jsonResult(listServers(config())))
 );
 
 server.registerTool(
@@ -82,7 +95,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: true, destructiveHint: false }
   },
-  async (input) => jsonResult(listRoots(config(), input.server_id))
+  handleToolCall(async (input) => jsonResult(listRoots(config(), input.server_id)))
 );
 
 server.registerTool(
@@ -99,7 +112,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: false }
   },
-  async (input) => jsonResult(await initSiteWorkspace(config(), input))
+  handleToolCall(async (input) => jsonResult(await initSiteWorkspace(config(), input)))
 );
 
 server.registerTool(
@@ -114,7 +127,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: true, destructiveHint: false }
   },
-  async (input) => jsonResult(await listFiles(config(), input))
+  handleToolCall(async (input) => jsonResult(await listFiles(config(), input)))
 );
 
 server.registerTool(
@@ -129,10 +142,10 @@ server.registerTool(
     },
     annotations: { readOnlyHint: true, destructiveHint: false }
   },
-  async (input) => {
+  handleToolCall(async (input) => {
     const result = await readFile(config(), input);
     return textResult(result.content);
-  }
+  })
 );
 
 server.registerTool(
@@ -152,7 +165,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: false }
   },
-  async (input) => jsonResult(await pullFileToWorkspace(config(), input))
+  handleToolCall(async (input) => jsonResult(await pullFileToWorkspace(config(), input)))
 );
 
 server.registerTool(
@@ -173,7 +186,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: true }
   },
-  async (input) => jsonResult(await pushFileFromWorkspace(config(), input))
+  handleToolCall(async (input) => jsonResult(await pushFileFromWorkspace(config(), input)))
 );
 
 server.registerTool(
@@ -189,7 +202,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: false }
   },
-  async (input) => jsonResult(await backupFile(config(), input))
+  handleToolCall(async (input) => jsonResult(await backupFile(config(), input)))
 );
 
 server.registerTool(
@@ -208,7 +221,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: true }
   },
-  async (input) => jsonResult(await writeFile(config(), input))
+  handleToolCall(async (input) => jsonResult(await writeFile(config(), input)))
 );
 
 server.registerTool(
@@ -228,7 +241,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: true }
   },
-  async (input) => jsonResult(await replaceInFile(config(), input))
+  handleToolCall(async (input) => jsonResult(await replaceInFile(config(), input)))
 );
 
 server.registerTool(
@@ -249,7 +262,7 @@ server.registerTool(
     },
     annotations: { readOnlyHint: false, destructiveHint: true }
   },
-  async (input) => jsonResult(await setDomainRedirect(config(), input))
+  handleToolCall(async (input) => jsonResult(await setDomainRedirect(config(), input)))
 );
 
 const transport = new StdioServerTransport();
