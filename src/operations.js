@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import { expandHome } from "./config.js";
-import { getServer, listServerSummaries } from "./config.js";
+import { getServer, listServerSummaries, saveConfig } from "./config.js";
 import { ensureRelativeFilePath, joinRemote, normalizeRemotePath } from "./path-utils.js";
 import { withSftp } from "./sftp.js";
 
@@ -44,6 +44,74 @@ export function listRoots(config, serverId) {
     server_id: resolvedServerId,
     roots: Object.entries(server.roots).map(([domain, root]) => ({ domain, root }))
   };
+}
+
+export async function discoverRoots(config, serverId) {
+  const { serverId: resolvedServerId, server } = getServer(config, serverId);
+  const homeDir = `/home/${server.username}`;
+  const configured = new Set(Object.keys(server.roots));
+
+  return withSftp(server, async (client) => {
+    const items = await client.list(homeDir);
+    const discovered = [];
+
+    for (const item of items) {
+      if (item.type !== "d") continue;
+      const publicHtmlPath = `${homeDir}/${item.name}/public_html`;
+      try {
+        await client.stat(publicHtmlPath);
+        discovered.push({
+          domain: item.name,
+          root: publicHtmlPath,
+          configured: configured.has(item.name)
+        });
+      } catch {
+        // no public_html — not a domain directory
+      }
+    }
+
+    return {
+      server_id: resolvedServerId,
+      home_dir: homeDir,
+      total: discovered.length,
+      unconfigured: discovered.filter((d) => !d.configured).length,
+      discovered
+    };
+  });
+}
+
+export async function addRoot(config, input) {
+  const { serverId, server } = getServer(config, input.server_id);
+  const domain = input.domain;
+
+  if (!domain || typeof domain !== "string") {
+    throw new Error("domain is required.");
+  }
+  if (server.roots[domain]) {
+    throw new Error(`Domain "${domain}" is already configured for server "${serverId}".`);
+  }
+
+  const root = input.root || `/home/${server.username}/${domain}/public_html`;
+
+  await withSftp(server, async (client) => {
+    try {
+      await client.stat(root);
+    } catch (error) {
+      if (isRemoteNotFoundError(error)) {
+        throw new Error(`Directory "${root}" does not exist on server "${serverId}".`);
+      }
+      throw error;
+    }
+  });
+
+  if (input.dry_run) {
+    return { server_id: serverId, domain, root, dry_run: true };
+  }
+
+  server.roots[domain] = root;
+  saveConfig(config);
+
+  return { server_id: serverId, domain, root, added: true };
 }
 
 export function resolveDomainRoot(config, serverId, domain) {

@@ -4,7 +4,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { loadConfig } from "./config.js";
 import {
+  addRoot,
   backupFile,
+  discoverRoots,
   initSiteWorkspace,
   listFiles,
   listRoots,
@@ -96,6 +98,40 @@ server.registerTool(
     annotations: { readOnlyHint: true, destructiveHint: false }
   },
   handleToolCall(async (input) => jsonResult(listRoots(config(), input.server_id)))
+);
+
+server.registerTool(
+  "discover_roots",
+  {
+    title: "Discover domain roots on server",
+    description:
+      "Scan the server home directory for domains with public_html and show which ones are not yet configured. Use add_root to register any you want to manage.",
+    inputSchema: {
+      server_id: serverId
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false }
+  },
+  handleToolCall(async (input) => jsonResult(await discoverRoots(config(), input.server_id)))
+);
+
+server.registerTool(
+  "add_root",
+  {
+    title: "Add domain root to config",
+    description:
+      "Register a new domain root for a server profile. Infers the remote path from the server username if not specified, verifies the directory exists via SFTP, and saves to the config file.",
+    inputSchema: {
+      server_id: serverId,
+      domain: z.string().describe("Domain name to add, e.g. saiyoken.jp."),
+      root: z
+        .string()
+        .optional()
+        .describe("Absolute remote path. Defaults to /home/{username}/{domain}/public_html."),
+      dry_run: z.boolean().default(false).describe("Verify without saving to config.")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false }
+  },
+  handleToolCall(async (input) => jsonResult(await addRoot(config(), input)))
 );
 
 server.registerTool(

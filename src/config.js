@@ -40,6 +40,11 @@ export function loadConfig(configPath = getConfigPath()) {
   return parsed;
 }
 
+export function saveConfig(config, configPath = getConfigPath()) {
+  validateConfig(config);
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf8");
+}
+
 export function validateConfig(config) {
   if (!config || typeof config !== "object") {
     throw new ConfigError("Config must be a JSON object.");
