@@ -1,0 +1,16 @@
+---
+description: XServer Files MCP repository rules
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+Use `AGENTS.md` for repository rules and safety constraints.
+
+Reusable workflows live in `skills/`:
+
+- `skills/xserver-files-setup/SKILL.md`
+- `skills/xserver-files-operator/SKILL.md`
+- `skills/xserver-mcp-operator/SKILL.md`
+
+Do not commit real XServer credentials, private keys, passphrases, or local config files. Keep remote file operations constrained to configured `roots[domain]`, and preserve default backups for writes.

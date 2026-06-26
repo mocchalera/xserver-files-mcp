@@ -19,6 +19,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+      - run: npm run validate:agent-support
       - run: npm test
       - name: CLI smoke test
         run: XSERVER_FILES_CONFIG=config/example.config.json node src/cli.js servers

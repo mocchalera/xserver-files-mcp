@@ -227,7 +227,35 @@ node src/cli.js --server sv67890 roots
 
 ## エージェント向け情報
 
-- **初期セットアップスキル: `.claude/skills/xserver-files-setup/SKILL.md`** — AI エージェントはこのスキルに従ってセットアップを対話的に実行できます
+このリポジトリは公開配布向けに、エージェント手順の正本を `skills/` に置いています。
+
 - リポジトリ運用ルール: `AGENTS.md`
-- SFTP ファイル操作スキル: `.claude/skills/xserver-files-operator/SKILL.md`
-- XServer パネル API スキル: `.claude/skills/xserver-mcp-operator/SKILL.md`
+- 初期セットアップスキル: `skills/xserver-files-setup/SKILL.md`
+- SFTP ファイル操作スキル: `skills/xserver-files-operator/SKILL.md`
+- XServer パネル API スキル: `skills/xserver-mcp-operator/SKILL.md`
+
+互換性のため、同じスキルを以下の project-local view からも参照できます:
+
+- `.claude/skills/`
+- `.agents/skills/`
+- `.gemini/skills/`
+- `.cursor/skills/`
+- `.grok/skills/`
+- `.antigravity/skills/`
+
+Cursor 向けには `.cursor/rules/xserver-files.mdc` も同梱しています。`CLAUDE.md`、`GEMINI.md`、`GROK.md`、`ANTIGRAVITY.md` は `AGENTS.md` と `skills/` への薄い入口です。
+
+GitHub から clone した場合は上記 view が symlink として含まれます。npm tarball では symlink view は含めず、`skills/` の正本と `.agent-support/` の再生成スクリプトを配布します。
+
+agent view を再生成・検証するには:
+
+```bash
+npm run agent:install
+npm run validate:agent-support
+```
+
+symlink が使えない環境では copy view を生成できます:
+
+```bash
+npm run agent:install -- --copy --force
+```

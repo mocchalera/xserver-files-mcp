@@ -10,9 +10,16 @@
   "files": [
     "src/",
     "config/example.config.json",
+    "skills/",
+    ".agent-support/",
+    ".cursor/rules/",
     ".mcp.json",
     "README.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "GROK.md",
+    "ANTIGRAVITY.md"
   ],
   "repository": {
     "type": "git",
@@ -31,6 +38,8 @@
   "scripts": {
     "start": "node src/server.js",
     "cli": "node src/cli.js",
+    "agent:install": "node .agent-support/install.mjs",
+    "validate:agent-support": "node .agent-support/validate.mjs",
     "test": "node --test"
   },
   "dependencies": {
