@@ -20,6 +20,7 @@ Use this skill to work with the local MCP/CLI in this repository without bypassi
 - Keep local site workspaces outside this repository, normally under `~/Dev/xserver-sites`.
 - Use workspace pull/push for edited site files; do not clone WordPress/site trees into this tool repository.
 - Treat `wp-config.php`, uploads, logs, backups, SQL/database dumps, and archives as default-excluded workspace paths unless the user explicitly accepts the risk.
+- Understand that `replaceInFile` and `set_domain_redirect` are not atomic: they read, transform, and write in separate SFTP calls. If another operator edits the same file concurrently, their changes may be lost. Coordinate access or use pull/push workflow for critical edits.
 
 ## Local Checks
 
