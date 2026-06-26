@@ -227,7 +227,7 @@ node src/cli.js --server sv67890 roots
 
 ## エージェント向け情報
 
-- **初期セットアップスキル: `.skills/xserver-files-setup/SKILL.md`** — AI エージェントはこのスキルに従ってセットアップを対話的に実行できます
+- **初期セットアップスキル: `.claude/skills/xserver-files-setup/SKILL.md`** — AI エージェントはこのスキルに従ってセットアップを対話的に実行できます
 - リポジトリ運用ルール: `AGENTS.md`
-- SFTP ファイル操作スキル: `.skills/xserver-files-operator/SKILL.md`
-- XServer パネル API スキル: `.skills/xserver-mcp-operator/SKILL.md`
+- SFTP ファイル操作スキル: `.claude/skills/xserver-files-operator/SKILL.md`
+- XServer パネル API スキル: `.claude/skills/xserver-mcp-operator/SKILL.md`

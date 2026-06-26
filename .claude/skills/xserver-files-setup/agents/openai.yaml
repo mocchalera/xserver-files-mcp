@@ -1,0 +1,4 @@
+interface:
+  display_name: "XServer Files Setup"
+  short_description: "Set up xserver-files-mcp interactively: config, SSH keys, panel registration, and connectivity check."
+  default_prompt: "Use the xserver-files-setup skill to set up this repository for XServer SFTP access. Follow the phased runbook to collect user info, create config, generate SSH keys, guide panel registration, and verify with doctor."

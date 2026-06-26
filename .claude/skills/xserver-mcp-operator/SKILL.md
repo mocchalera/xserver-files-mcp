@@ -9,7 +9,7 @@ description: Use the host-provided XServer MCP tools safely. Use for XServer ser
 
 Use this skill for the XServer-provided MCP server, not the custom SFTP file MCP in this repo. XServer MCP is for server-panel operations such as domain inventory, SSL, DNS, WordPress, mail, FTP, MySQL, PHP versions, and logs.
 
-Use `.skills/xserver-files-operator/SKILL.md` instead when the task requires reading or editing remote files such as `.htaccess`.
+Use `.claude/skills/xserver-files-operator/SKILL.md` instead when the task requires reading or editing remote files such as `.htaccess`.
 
 ## First Step
 
