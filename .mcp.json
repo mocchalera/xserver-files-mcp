@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "xserver-files": {
+      "command": "node",
+      "args": ["./src/server.js"],
+      "env": {
+        "XSERVER_FILES_CONFIG": "~/.config/xserver-files-mcp/config.json"
+      }
+    }
+  }
+}
