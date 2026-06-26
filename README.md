@@ -2,9 +2,13 @@
 
 XServer のファイル操作を SFTP 経由で安全に行うローカル stdio MCP サーバー & CLI。
 
-**前提条件:** Node.js 20+、SSH アクセスが有効な XServer アカウント、XServer サーバーパネルに登録済みの ed25519 SSH 鍵。
+**前提条件:** Node.js 20+、SSH アクセスが有効な XServer アカウント。
 
-## クイックスタート
+## セットアップガイド
+
+以下の手順を上から順に進めてください。AI エージェント（Claude Code、Codex など）に依頼する場合も、この手順に沿って自動実行されます。`[要ユーザー操作]` のマークがあるステップのみ人間の操作が必要です。
+
+### Step 1: インストール
 
 ```bash
 git clone https://github.com/mocchalera/xserver-files-mcp.git
@@ -12,66 +16,119 @@ cd xserver-files-mcp
 npm install
 ```
 
-サーバー接続なしで動作確認:
+動作確認（サーバー接続不要）:
 
 ```bash
 XSERVER_FILES_CONFIG=config/example.config.json node src/cli.js servers
 ```
 
-実際の設定ファイルに対して SSH 鍵と SFTP 接続を診断:
+### Step 2: XServer の情報を確認 `[要ユーザー操作]`
 
-```bash
-node src/cli.js doctor
-```
+設定ファイルを作成するために、以下の情報が必要です。XServer サーバーパネル（https://secure.xserver.ne.jp/xapanel/login/xserver/server/）にログインして確認してください。
 
-## 設定
+| 必要な情報 | 確認場所 | 例 |
+|---|---|---|
+| サーバー ID | サーバーパネル上部に表示 | `sv12345` |
+| ホスト名 | サーバー情報 → ホスト名 | `sv12345.xsrv.jp` |
+| 操作対象のドメイン | ドメイン設定 → ドメイン一覧 | `example.com` |
+| ドキュメントルート | ドメイン設定 → ドメイン一覧の「ドキュメントルート」列 | `/home/sv12345/example.com/public_html` |
 
-サンプル設定をコピーして、自分の XServer アカウント情報に編集:
+> **ヒント:** XServer のドキュメントルートは通常 `/home/<サーバーID>/<ドメイン>/public_html` の形式です。
+
+### Step 3: 設定ファイルの作成
 
 ```bash
 mkdir -p ~/.config/xserver-files-mcp
 cp config/example.config.json ~/.config/xserver-files-mcp/config.json
 ```
 
-### 設定リファレンス
+`~/.config/xserver-files-mcp/config.json` を Step 2 で確認した情報に書き換えます:
 
-| フィールド | 例 | 説明 |
+```json
+{
+  "defaultServer": "<サーバーID>",
+  "localWorkspaceRoot": "~/Dev/xserver-sites",
+  "servers": {
+    "<サーバーID>": {
+      "host": "<サーバーID>.xsrv.jp",
+      "port": 10022,
+      "username": "<サーバーID>",
+      "privateKeyPath": "~/.ssh/xserver_<サーバーID>",
+      "roots": {
+        "<ドメイン>": "/home/<サーバーID>/<ドメイン>/public_html"
+      }
+    }
+  }
+}
+```
+
+`localWorkspaceRoot` はサイトファイルの pull 先です。このリポジトリの外であれば任意のパスで構いません。
+
+### Step 4: SSH 鍵の作成
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/xserver_<サーバーID> -C xserver-<サーバーID>
+```
+
+パスフレーズを設定した場合は、設定ファイルの `passphraseEnv` にパスフレーズを格納する環境変数名を指定し、その環境変数にパスフレーズを設定してください。
+
+### Step 5: SSH 公開鍵を XServer に登録 `[要ユーザー操作]`
+
+**この操作は XServer サーバーパネルで手動で行う必要があります。**
+
+1. 公開鍵の内容を確認:
+   ```bash
+   cat ~/.ssh/xserver_<サーバーID>.pub
+   ```
+2. XServer サーバーパネルにログイン
+3. **「SSH設定」** を開く
+4. SSH 設定が **「ON」** になっていることを確認（OFF なら ON に変更）
+5. **「公開鍵登録・更新」** タブを開く
+6. 上記の公開鍵の内容を全文貼り付けて **「確認画面へ進む」** → **「登録する」**
+
+### Step 6: 接続テスト
+
+```bash
+ssh -p 10022 -i ~/.ssh/xserver_<サーバーID> <サーバーID>@<サーバーID>.xsrv.jp 'pwd'
+```
+
+### Step 7: doctor で最終確認
+
+```bash
+node src/cli.js doctor
+```
+
+すべて `[PASS]` になればセットアップ完了です。
+
+#### トラブルシューティング
+
+| doctor の出力 | 原因 | 対処 |
 |---|---|---|
-| `defaultServer` | `"sv12345"` | `--server` 省略時に使う `servers` 内のキー |
-| `localWorkspaceRoot` | `"~/Dev/xserver-sites"` | pull したサイトファイルの保存先（このリポジトリの外） |
-| `servers.<id>.host` | `"sv12345.xsrv.jp"` | XServer ホスト名（`<サーバーID>.xsrv.jp`） |
-| `servers.<id>.port` | `10022` | SSH ポート（XServer は常に `10022`） |
-| `servers.<id>.username` | `"sv12345"` | SSH ユーザー名（サーバー ID と同じ） |
-| `servers.<id>.privateKeyPath` | `"~/.ssh/xserver_sv12345"` | ed25519 秘密鍵のパス |
-| `servers.<id>.passphraseEnv` | `"XSERVER_SV12345_KEY_PASSPHRASE"` | 鍵のパスフレーズを格納する環境変数名（任意） |
-| `servers.<id>.roots.<domain>` | `"/home/sv12345/example.com/public_html"` | ドメインごとのリモートドキュメントルート（絶対パス） |
+| `[FAIL] Config loaded` | 設定ファイルが見つからないか JSON が不正 | `~/.config/xserver-files-mcp/config.json` の存在と JSON 構文を確認 |
+| `[FAIL] SSH key exists` | 秘密鍵ファイルが見つからない | Step 4 の鍵作成を確認。パスが設定ファイルの `privateKeyPath` と一致しているか確認 |
+| `[FAIL] SFTP connection` | SSH 接続に失敗 | Step 5 の公開鍵登録を確認。`ssh -p 10022 ...` で手動テスト |
 
-### SSH 鍵のセットアップ
+## MCP 登録
 
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/xserver_sv12345 -C xserver-sv12345
+Claude Code でこのリポジトリを開くと `.mcp.json` により自動登録されます。
+
+他の MCP クライアント（Claude Desktop、VS Code など）では、設定に以下を追加:
+
+```json
+{
+  "mcpServers": {
+    "xserver-files": {
+      "command": "node",
+      "args": ["/絶対パス/xserver-files-mcp/src/server.js"],
+      "env": {
+        "XSERVER_FILES_CONFIG": "/ホームディレクトリ/.config/xserver-files-mcp/config.json"
+      }
+    }
+  }
+}
 ```
 
-XServer サーバーパネルで公開鍵を登録してからテスト:
-
-```bash
-ssh -p 10022 -i ~/.ssh/xserver_sv12345 sv12345@sv12345.xsrv.jp 'pwd'
-```
-
-### ワークスペースの構成
-
-ローカルのサイトワークスペースはこのリポジトリの外に配置します:
-
-```text
-~/Dev/xserver-sites/
-  sv12345/
-    example.com/
-    blog.example.com/
-  sv67890/
-    shop.example.com/
-```
-
-このリポジトリは MCP/CLI のソースコード専用です。
+パスは自分のマシンの絶対パスに置き換えてください。
 
 ## CLI の使い方
 
@@ -132,26 +189,6 @@ RewriteRule ^(.*)$ https://new-site.example.com/$1 [R=301,L]
 ### 共通オプション
 
 すべての書き込みコマンドは `--dry-run` で変更をプレビューできます。`--no-backup` で自動バックアップをスキップ。`--server <id>` でデフォルト以外のサーバーを指定。
-
-## MCP 登録
-
-MCP クライアント（Claude Desktop、VS Code など）の設定に追加:
-
-```json
-{
-  "mcpServers": {
-    "xserver-files": {
-      "command": "node",
-      "args": ["/絶対パス/xserver-files-mcp/src/server.js"],
-      "env": {
-        "XSERVER_FILES_CONFIG": "/ホームディレクトリ/.config/xserver-files-mcp/config.json"
-      }
-    }
-  }
-}
-```
-
-パスは自分のマシンの絶対パスに置き換えてください。
 
 ### MCP ツール一覧
 
