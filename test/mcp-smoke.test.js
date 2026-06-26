@@ -43,6 +43,6 @@ describe("mcp server", () => {
     const text = result.content.find((item) => item.type === "text")?.text;
     assert.ok(text);
     const parsed = JSON.parse(text);
-    assert.equal(parsed.defaultServer, "willforward");
+    assert.equal(parsed.defaultServer, "sv12345");
   });
 });

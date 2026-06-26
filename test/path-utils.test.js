@@ -12,6 +12,6 @@ describe("path utilities", () => {
   });
 
   it("joins paths under configured root", () => {
-    assert.equal(joinRemote("/home/willforward/site/public_html", ".htaccess"), "/home/willforward/site/public_html/.htaccess");
+    assert.equal(joinRemote("/home/sv12345/site/public_html", ".htaccess"), "/home/sv12345/site/public_html/.htaccess");
   });
 });

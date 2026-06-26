@@ -2,7 +2,7 @@
 
 Local stdio MCP server and CLI for safe XServer file operations over SFTP.
 
-This is designed for a first `willforward` setup while keeping the config format ready for multiple XServer accounts later.
+Supports single or multiple XServer accounts with per-domain path isolation, default backups, and dry-run previews.
 
 ## What It Does
 
@@ -23,13 +23,13 @@ npm install
 Create an SSH key for XServer:
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/xserver_willforward -C xserver-willforward
+ssh-keygen -t ed25519 -f ~/.ssh/xserver_sv12345 -C xserver-sv12345
 ```
 
 Register the public key in XServer Server Panel, then test SFTP/SSH:
 
 ```bash
-ssh -p 10022 -i ~/.ssh/xserver_willforward willforward@willforward.xsrv.jp 'pwd'
+ssh -p 10022 -i ~/.ssh/xserver_sv12345 sv12345@sv12345.xsrv.jp 'pwd'
 ```
 
 Create the local config:
@@ -53,11 +53,11 @@ The expected shape is:
 
 ```text
 ~/Dev/xserver-sites/
-  willforward/
-    willforwardcreate.jp/
-    willforward.co.jp/
-  will_athlete/
-    backaging.com/
+  sv12345/
+    old-site.example.com/
+    new-site.example.com/
+  sv67890/
+    blog.example.com/
 ```
 
 Keep this repository for the MCP/CLI source code only. Do not clone remote site files into this repository.
@@ -73,38 +73,38 @@ npm run cli -- servers
 List a domain root:
 
 ```bash
-npm run cli -- ls willforwardcreate.jp .
+npm run cli -- ls old-site.example.com .
 ```
 
 Read `.htaccess`:
 
 ```bash
-npm run cli -- read willforwardcreate.jp .htaccess
+npm run cli -- read old-site.example.com .htaccess
 ```
 
 Create the local workspace for one domain:
 
 ```bash
-npm run cli -- workspace willforwardcreate.jp
+npm run cli -- workspace old-site.example.com
 ```
 
 Pull one remote file into the local site workspace:
 
 ```bash
-npm run cli -- pull willforwardcreate.jp .htaccess
+npm run cli -- pull old-site.example.com .htaccess
 ```
 
 The file is written to:
 
 ```text
-~/Dev/xserver-sites/willforward/willforwardcreate.jp/.htaccess
+~/Dev/xserver-sites/sv12345/old-site.example.com/.htaccess
 ```
 
 Push the matching local workspace file back to the server with remote backup by default:
 
 ```bash
-npm run cli -- push willforwardcreate.jp .htaccess --dry-run
-npm run cli -- push willforwardcreate.jp .htaccess
+npm run cli -- push old-site.example.com .htaccess --dry-run
+npm run cli -- push old-site.example.com .htaccess
 ```
 
 The workspace pull/push flow refuses `wp-config.php`, uploads, logs, backups, database dumps, and archives by default. Use `--allow-sensitive` only after reviewing the risk.
@@ -112,25 +112,25 @@ The workspace pull/push flow refuses `wp-config.php`, uploads, logs, backups, da
 Dry-run the redirect change:
 
 ```bash
-npm run cli -- redirect willforwardcreate.jp https://willforward.co.jp --dry-run
+npm run cli -- redirect old-site.example.com https://new-site.example.com --dry-run
 ```
 
 Apply the redirect:
 
 ```bash
-npm run cli -- redirect willforwardcreate.jp https://willforward.co.jp
+npm run cli -- redirect old-site.example.com https://new-site.example.com
 ```
 
 The redirect command inserts or updates this marked block:
 
 ```apache
-# BEGIN xserver-files-mcp redirect willforwardcreate.jp
+# BEGIN xserver-files-mcp redirect old-site.example.com
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteCond %{HTTP_HOST} ^(www\.)?willforwardcreate\.jp$ [NC]
-RewriteRule ^(.*)$ https://willforward.co.jp/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^(www\.)?old-site\.example\.com$ [NC]
+RewriteRule ^(.*)$ https://new-site.example.com/$1 [R=301,L]
 </IfModule>
-# END xserver-files-mcp redirect willforwardcreate.jp
+# END xserver-files-mcp redirect old-site.example.com
 ```
 
 ## MCP Registration
@@ -183,7 +183,7 @@ Example MCP config shape:
 Add more entries under `servers` and pass `server_id` in MCP calls, or `--server` in CLI calls:
 
 ```bash
-npm run cli -- --server will_athlete roots
+npm run cli -- --server sv67890 roots
 ```
 
 If omitted, `defaultServer` is used.

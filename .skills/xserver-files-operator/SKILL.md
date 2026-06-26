@@ -1,6 +1,6 @@
 ---
 name: xserver-files-operator
-description: Operate the xserver-files-mcp repository safely. Use when working on this repo's local stdio MCP server, CLI, XServer SFTP configuration, remote file reads/writes, .htaccess backups, or domain redirect workflows such as willforwardcreate.jp to willforward.co.jp.
+description: Operate the xserver-files-mcp repository safely. Use when working on this repo's local stdio MCP server, CLI, XServer SFTP configuration, remote file reads/writes, .htaccess backups, or domain redirect workflows such as old-site.example.com to new-site.example.com.
 ---
 
 # XServer Files Operator
@@ -14,7 +14,7 @@ Use this skill to work with the local MCP/CLI in this repository without bypassi
 - Treat `~/.config/xserver-files-mcp/config.json` as the operator-owned config; keep only `config/example.config.json` in the repo.
 - Keep private keys under `~/.ssh/`, not in this repository.
 - Use `server_id` for multi-server work; omit it only when the default server is intended.
-- Use configured domains such as `willforwardcreate.jp`; do not pass absolute remote paths to tools or CLI commands.
+- Use configured domains such as `old-site.example.com`; do not pass absolute remote paths to tools or CLI commands.
 - Run dry-run first for redirect and write workflows unless the user explicitly asks for an immediate write.
 - Keep backups enabled unless the user explicitly accepts the risk.
 - Keep local site workspaces outside this repository, normally under `~/Dev/xserver-sites`.
@@ -40,66 +40,66 @@ XSERVER_FILES_CONFIG=config/example.config.json node src/cli.js servers
 Create a domain workspace outside the repository:
 
 ```bash
-node src/cli.js workspace willforwardcreate.jp
+node src/cli.js workspace old-site.example.com
 ```
 
 Pull one file for local editing:
 
 ```bash
-node src/cli.js pull willforwardcreate.jp .htaccess
+node src/cli.js pull old-site.example.com .htaccess
 ```
 
 Push the matching workspace file back with a dry-run first:
 
 ```bash
-node src/cli.js push willforwardcreate.jp .htaccess --dry-run
-node src/cli.js push willforwardcreate.jp .htaccess
+node src/cli.js push old-site.example.com .htaccess --dry-run
+node src/cli.js push old-site.example.com .htaccess
 ```
 
 ## Setup Workflow
 
 1. Copy `config/example.config.json` to `~/.config/xserver-files-mcp/config.json`.
-2. Create/register the SSH key outside the repo, for example `~/.ssh/xserver_willforward`.
+2. Create/register the SSH key outside the repo, for example `~/.ssh/xserver_sv12345`.
 3. Verify XServer SSH/SFTP access on port `10022` before using remote file tools:
 
 ```bash
-ssh -p 10022 -i ~/.ssh/xserver_willforward willforward@willforward.xsrv.jp 'pwd'
+ssh -p 10022 -i ~/.ssh/xserver_sv12345 sv12345@sv12345.xsrv.jp 'pwd'
 ```
 
 4. Confirm the configured document roots before writes:
 
 ```bash
 node src/cli.js roots
-node src/cli.js ls willforwardcreate.jp .
-node src/cli.js workspace willforwardcreate.jp
+node src/cli.js ls old-site.example.com .
+node src/cli.js workspace old-site.example.com
 ```
 
 ## Redirect Workflow
 
-For `willforwardcreate.jp` to `https://willforward.co.jp`, dry-run first:
+For `old-site.example.com` to `https://new-site.example.com`, dry-run first:
 
 ```bash
-node src/cli.js redirect willforwardcreate.jp https://willforward.co.jp --dry-run
+node src/cli.js redirect old-site.example.com https://new-site.example.com --dry-run
 ```
 
 Then apply:
 
 ```bash
-node src/cli.js redirect willforwardcreate.jp https://willforward.co.jp
+node src/cli.js redirect old-site.example.com https://new-site.example.com
 ```
 
 After applying, verify both HTTP hosts:
 
 ```bash
-curl -I http://willforwardcreate.jp/
-curl -I http://www.willforwardcreate.jp/
+curl -I http://old-site.example.com/
+curl -I http://www.old-site.example.com/
 ```
 
 HTTPS verification depends on certificate state:
 
 ```bash
-curl -I https://willforwardcreate.jp/
-curl -I https://www.willforwardcreate.jp/
+curl -I https://old-site.example.com/
+curl -I https://www.old-site.example.com/
 ```
 
 ## MCP Registration
@@ -111,9 +111,9 @@ Register `src/server.js` as a local stdio MCP command. Use an absolute path and 
   "mcpServers": {
     "xserver-files": {
       "command": "node",
-      "args": ["/Users/mocchalera/Dev/xserver-files-mcp/src/server.js"],
+      "args": ["/ABSOLUTE/PATH/TO/xserver-files-mcp/src/server.js"],
       "env": {
-        "XSERVER_FILES_CONFIG": "/Users/mocchalera/.config/xserver-files-mcp/config.json"
+        "XSERVER_FILES_CONFIG": "/Users/YOU/.config/xserver-files-mcp/config.json"
       }
     }
   }

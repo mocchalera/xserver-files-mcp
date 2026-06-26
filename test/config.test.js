@@ -4,16 +4,16 @@ import { listServerSummaries, validateConfig } from "../src/config.js";
 
 describe("config", () => {
   const config = {
-    defaultServer: "willforward",
+    defaultServer: "sv12345",
     localWorkspaceRoot: "~/Dev/xserver-sites",
     servers: {
-      willforward: {
-        host: "willforward.xsrv.jp",
+      sv12345: {
+        host: "sv12345.xsrv.jp",
         port: 10022,
-        username: "willforward",
-        privateKeyPath: "~/.ssh/xserver_willforward",
+        username: "sv12345",
+        privateKeyPath: "~/.ssh/xserver_sv12345",
         roots: {
-          "willforwardcreate.jp": "/home/willforward/willforwardcreate.jp/public_html"
+          "old-site.example.com": "/home/sv12345/old-site.example.com/public_html"
         }
       }
     }
@@ -26,11 +26,11 @@ describe("config", () => {
   it("summarizes without exposing private key paths", () => {
     assert.deepEqual(listServerSummaries(config), [
       {
-        server_id: "willforward",
-        host: "willforward.xsrv.jp",
+        server_id: "sv12345",
+        host: "sv12345.xsrv.jp",
         port: 10022,
-        username: "willforward",
-        domains: ["willforwardcreate.jp"],
+        username: "sv12345",
+        domains: ["old-site.example.com"],
         is_default: true
       }
     ]);
@@ -39,16 +39,16 @@ describe("config", () => {
 
 describe("config validation rejects", () => {
   const createValidConfig = () => ({
-    defaultServer: "willforward",
+    defaultServer: "sv12345",
     localWorkspaceRoot: "~/Dev/xserver-sites",
     servers: {
-      willforward: {
-        host: "willforward.xsrv.jp",
+      sv12345: {
+        host: "sv12345.xsrv.jp",
         port: 10022,
-        username: "willforward",
-        privateKeyPath: "~/.ssh/xserver_willforward",
+        username: "sv12345",
+        privateKeyPath: "~/.ssh/xserver_sv12345",
         roots: {
-          "willforwardcreate.jp": "/home/willforward/willforwardcreate.jp/public_html"
+          "old-site.example.com": "/home/sv12345/old-site.example.com/public_html"
         }
       }
     }
@@ -77,21 +77,21 @@ describe("config validation rejects", () => {
 
   it("rejects server missing required host", () => {
     const config = createValidConfig();
-    delete config.servers.willforward.host;
+    delete config.servers.sv12345.host;
 
     assert.throws(() => validateConfig(config), /requires host/);
   });
 
   it("rejects server port that is not a positive integer", () => {
     const config = createValidConfig();
-    config.servers.willforward.port = "abc";
+    config.servers.sv12345.port = "abc";
 
     assert.throws(() => validateConfig(config), /port must be a positive integer/);
   });
 
   it("rejects server root that is not an absolute remote path", () => {
     const config = createValidConfig();
-    config.servers.willforward.roots["willforwardcreate.jp"] = "relative/path";
+    config.servers.sv12345.roots["old-site.example.com"] = "relative/path";
 
     assert.throws(() => validateConfig(config), /absolute remote path/);
   });

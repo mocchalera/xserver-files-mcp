@@ -1,6 +1,6 @@
 ---
 name: xserver-mcp-operator
-description: Use the host-provided XServer MCP tools safely. Use for XServer server-panel operations such as server info, domain/subdomain, SSL, DNS, WordPress, mail, FTP, MySQL, PHP version, cron, SSH, or log checks on namespaces like mcp__xserver_willforward and mcp__xserver_will_athlete.
+description: Use the host-provided XServer MCP tools safely. Use for XServer server-panel operations such as server info, domain/subdomain, SSL, DNS, WordPress, mail, FTP, MySQL, PHP version, cron, SSH, or log checks on namespaces like mcp__xserver_sv12345 and mcp__xserver_sv67890.
 ---
 
 # XServer MCP Operator
@@ -21,8 +21,8 @@ tool_search: mcp__xserver <intent keywords>
 
 Prefer exact namespace selection:
 
-- `mcp__xserver_willforward` for the `willforward` server.
-- `mcp__xserver_will_athlete` for the `will_athlete` server.
+- `mcp__xserver_sv12345` for the `sv12345` server.
+- `mcp__xserver_sv67890` for the `sv67890` server.
 
 If the target server is ambiguous, ask before using any write or delete tool.
 
@@ -92,11 +92,11 @@ MySQL:
 
 ## Redirect Boundary
 
-The XServer MCP currently visible in this environment manages server settings but does not expose direct `.htaccess` editing or a dedicated redirect tool. For `willforwardcreate.jp -> https://willforward.co.jp` style redirects, use:
+The XServer MCP currently visible in this environment manages server settings but does not expose direct `.htaccess` editing or a dedicated redirect tool. For `old-site.example.com -> https://new-site.example.com` style redirects, use:
 
 ```bash
-node src/cli.js redirect willforwardcreate.jp https://willforward.co.jp --dry-run
-node src/cli.js redirect willforwardcreate.jp https://willforward.co.jp
+node src/cli.js redirect old-site.example.com https://new-site.example.com --dry-run
+node src/cli.js redirect old-site.example.com https://new-site.example.com
 ```
 
 Use XServer MCP around that workflow to inspect domain, SSL, DNS, and WordPress state.

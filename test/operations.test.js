@@ -15,15 +15,15 @@ import {
 } from "../src/operations.js";
 
 const config = {
-  defaultServer: "willforward",
+  defaultServer: "sv12345",
   servers: {
-    willforward: {
-      host: "willforward.xsrv.jp",
+    sv12345: {
+      host: "sv12345.xsrv.jp",
       port: 10022,
-      username: "willforward",
-      privateKeyPath: "~/.ssh/xserver_willforward",
+      username: "sv12345",
+      privateKeyPath: "~/.ssh/xserver_sv12345",
       roots: {
-        "willforwardcreate.jp": "/home/willforward/willforwardcreate.jp/public_html"
+        "old-site.example.com": "/home/sv12345/old-site.example.com/public_html"
       }
     }
   }
@@ -50,8 +50,8 @@ describe("operations helpers", () => {
   });
 
   it("generates dotfile backup paths next to the target", () => {
-    const backupPath = makeBackupPath("/home/willforward/site/public_html/.htaccess", "redirect");
-    assert.match(backupPath, /^\/home\/willforward\/site\/public_html\/\.htaccess\.redirect\..+\.bak$/);
+    const backupPath = makeBackupPath("/home/sv12345/site/public_html/.htaccess", "redirect");
+    assert.match(backupPath, /^\/home\/sv12345\/site\/public_html\/\.htaccess\.redirect\..+\.bak$/);
   });
 
   it("generates unique backup timestamps", async () => {
@@ -99,14 +99,14 @@ describe("operations helpers", () => {
   it("resolves local site workspace paths outside the tool repository", () => {
     const workspaceRoot = path.join(os.tmpdir(), "xserver-sites-test");
     const workspace = resolveSiteWorkspace(config, {
-      domain: "willforwardcreate.jp",
+      domain: "old-site.example.com",
       workspace_root: workspaceRoot
     });
 
-    assert.equal(workspace.siteWorkspacePath, path.join(workspaceRoot, "willforward", "willforwardcreate.jp"));
+    assert.equal(workspace.siteWorkspacePath, path.join(workspaceRoot, "sv12345", "old-site.example.com"));
     assert.equal(
       resolveWorkspaceFilePath(workspace.siteWorkspacePath, "css/style.css"),
-      path.join(workspaceRoot, "willforward", "willforwardcreate.jp", "css", "style.css")
+      path.join(workspaceRoot, "sv12345", "old-site.example.com", "css", "style.css")
     );
   });
 
@@ -123,11 +123,11 @@ describe("operations helpers", () => {
   it("creates a protective gitignore for a local site workspace", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "xserver-sites-"));
     const result = await initSiteWorkspace(config, {
-      domain: "willforwardcreate.jp",
+      domain: "old-site.example.com",
       workspace_root: workspaceRoot
     });
 
-    assert.equal(result.local_path, path.join(workspaceRoot, "willforward", "willforwardcreate.jp"));
+    assert.equal(result.local_path, path.join(workspaceRoot, "sv12345", "old-site.example.com"));
     const gitignore = fs.readFileSync(path.join(result.local_path, ".gitignore"), "utf8");
     assert.match(gitignore, /wp-config\.php/);
     assert.match(gitignore, /wp-content\/uploads\//);

@@ -252,8 +252,8 @@ server.registerTool(
       "Insert or update a marked .htaccess 301 redirect block for a configured source domain. Creates a backup by default.",
     inputSchema: {
       server_id: serverId,
-      domain: z.string().describe("Source domain to redirect, such as willforwardcreate.jp."),
-      to_url: z.string().describe("Destination URL, such as https://willforward.co.jp."),
+      domain: z.string().describe("Source domain to redirect, such as old-site.example.com."),
+      to_url: z.string().describe("Destination URL, such as https://new-site.example.com."),
       path: z.string().default(".htaccess").describe("Relative .htaccess path under the source domain root."),
       preserve_path: z.boolean().default(true).describe("Append the original request path to the destination."),
       backup: z.boolean().default(true).describe("Back up existing .htaccess before writing."),
