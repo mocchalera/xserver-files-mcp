@@ -121,6 +121,8 @@ export async function writeFile(config, input) {
   const remotePath = joinRemote(root, relativePath);
   const backup = input.backup !== false;
   const dryRun = input.dry_run === true;
+  const content = input.content || "";
+  const writtenBytes = Buffer.byteLength(content, TEXT_ENCODING);
 
   return withSftp(server, async (client) => {
     let backupRemotePath = null;
@@ -140,7 +142,7 @@ export async function writeFile(config, input) {
         remote_path: remotePath,
         dry_run: true,
         would_backup: backup && existed,
-        would_write_bytes: Buffer.byteLength(input.content || "", TEXT_ENCODING)
+        would_write_bytes: writtenBytes
       };
     }
 
@@ -150,14 +152,25 @@ export async function writeFile(config, input) {
       await client.put(Buffer.from(existing), backupRemotePath);
     }
 
-    await client.put(Buffer.from(input.content || "", TEXT_ENCODING), remotePath);
+    await client.put(Buffer.from(content, TEXT_ENCODING), remotePath);
+    const writtenStat = await client.stat(remotePath);
+    if (writtenStat.size !== writtenBytes) {
+      const backupMessage = backupRemotePath
+        ? ` The backup at ${backupRemotePath} is intact.`
+        : " No backup was created.";
+      throw new Error(
+        `Write verification failed: expected ${writtenBytes} bytes but remote file is ${writtenStat.size} bytes.${backupMessage}`
+      );
+    }
+
     return {
       server_id: serverId,
       domain,
       path: relativePath,
       remote_path: remotePath,
       backup_remote_path: backupRemotePath,
-      written_bytes: Buffer.byteLength(input.content || "", TEXT_ENCODING)
+      written_bytes: writtenBytes,
+      verified: true
     };
   });
 }
