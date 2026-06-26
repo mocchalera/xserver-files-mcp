@@ -7,6 +7,7 @@ import {
   ensureSafeSiteFilePath,
   initSiteWorkspace,
   isDefaultExcludedSitePath,
+  MAX_READ_SIZE,
   makeBackupPath,
   resolveSiteWorkspace,
   resolveWorkspaceFilePath,
@@ -29,6 +30,10 @@ const config = {
 };
 
 describe("operations helpers", () => {
+  it("exports the maximum read size safety limit", () => {
+    assert.equal(MAX_READ_SIZE, 10485760);
+  });
+
   it("inserts a marked block before existing content", () => {
     const result = upsertMarkedBlock("WordPress\n", "# BEGIN test", "# END test", "# BEGIN test\nrule\n# END test");
     assert.equal(result, "# BEGIN test\nrule\n# END test\n\nWordPress\n");

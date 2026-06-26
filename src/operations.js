@@ -6,6 +6,7 @@ import { ensureRelativeFilePath, joinRemote, normalizeRemotePath } from "./path-
 import { withSftp } from "./sftp.js";
 
 const TEXT_ENCODING = "utf8";
+export const MAX_READ_SIZE = 10 * 1024 * 1024;
 const DEFAULT_LOCAL_WORKSPACE_ROOT = "~/Dev/xserver-sites";
 const WORKSPACE_GITIGNORE = [
   "# Local XServer working tree",
@@ -85,6 +86,13 @@ export async function readFile(config, input) {
   const remotePath = joinRemote(root, relativePath);
 
   return withSftp(server, async (client) => {
+    const stat = await client.stat(remotePath);
+    if (stat.size > MAX_READ_SIZE) {
+      throw new Error(
+        `File size (${stat.size} bytes) exceeds the 10MB safety limit. Use SFTP directly for large files.`
+      );
+    }
+
     const buffer = await client.get(remotePath);
     return {
       server_id: serverId,
