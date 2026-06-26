@@ -2,7 +2,28 @@
   "name": "xserver-files-mcp",
   "version": "0.1.0",
   "description": "Local stdio MCP server and CLI for safe XServer file operations over SFTP.",
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "src/",
+    "config/example.config.json",
+    ".mcp.json",
+    "README.md",
+    "AGENTS.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mocchalera/xserver-files-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "xserver",
+    "sftp",
+    "cli"
+  ],
   "bin": {
     "xserver-files-mcp": "./src/server.js",
     "xserver-files": "./src/cli.js"
