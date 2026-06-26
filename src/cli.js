@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { ConfigError, expandHome, loadConfig } from "./config.js";
 import {
@@ -17,11 +18,14 @@ import {
 } from "./operations.js";
 import { withSftp } from "./sftp.js";
 
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json");
 const program = new Command();
 
 program
   .name("xserver-files")
   .description("Safe XServer file operations over SFTP")
+  .version(pkg.version)
   .option("-c, --config <path>", "Config path. Defaults to XSERVER_FILES_CONFIG or ~/.config/xserver-files-mcp/config.json")
   .option("-s, --server <server_id>", "Server profile id. Defaults to config.defaultServer.");
 
