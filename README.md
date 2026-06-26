@@ -1,10 +1,10 @@
 # xserver-files-mcp
 
-Local stdio MCP server and CLI for safe XServer file operations over SFTP.
+XServer のファイル操作を SFTP 経由で安全に行うローカル stdio MCP サーバー & CLI。
 
-**Prerequisites:** Node.js 20+, an XServer account with SSH access enabled, and an ed25519 SSH key registered in the XServer Server Panel.
+**前提条件:** Node.js 20+、SSH アクセスが有効な XServer アカウント、XServer サーバーパネルに登録済みの ed25519 SSH 鍵。
 
-## Quick Start
+## クイックスタート
 
 ```bash
 git clone https://github.com/mocchalera/xserver-files-mcp.git
@@ -12,55 +12,55 @@ cd xserver-files-mcp
 npm install
 ```
 
-Verify the installation works (no server connection needed):
+サーバー接続なしで動作確認:
 
 ```bash
 XSERVER_FILES_CONFIG=config/example.config.json node src/cli.js servers
 ```
 
-Run diagnostics against your real config to check SSH keys and SFTP connectivity:
+実際の設定ファイルに対して SSH 鍵と SFTP 接続を診断:
 
 ```bash
 node src/cli.js doctor
 ```
 
-## Configuration
+## 設定
 
-Copy the example config and edit it with your XServer account details:
+サンプル設定をコピーして、自分の XServer アカウント情報に編集:
 
 ```bash
 mkdir -p ~/.config/xserver-files-mcp
 cp config/example.config.json ~/.config/xserver-files-mcp/config.json
 ```
 
-### Config Reference
+### 設定リファレンス
 
-| Field | Example | Description |
+| フィールド | 例 | 説明 |
 |---|---|---|
-| `defaultServer` | `"sv12345"` | Key from `servers` to use when `--server` is omitted |
-| `localWorkspaceRoot` | `"~/Dev/xserver-sites"` | Local directory for pulled site files (outside this repo) |
-| `servers.<id>.host` | `"sv12345.xsrv.jp"` | XServer hostname (`<server_id>.xsrv.jp`) |
-| `servers.<id>.port` | `10022` | SSH port (always `10022` for XServer) |
-| `servers.<id>.username` | `"sv12345"` | SSH username (same as your server ID) |
-| `servers.<id>.privateKeyPath` | `"~/.ssh/xserver_sv12345"` | Path to your ed25519 private key |
-| `servers.<id>.passphraseEnv` | `"XSERVER_SV12345_KEY_PASSPHRASE"` | Env var holding the key passphrase (optional) |
-| `servers.<id>.roots.<domain>` | `"/home/sv12345/example.com/public_html"` | Absolute remote document root per domain |
+| `defaultServer` | `"sv12345"` | `--server` 省略時に使う `servers` 内のキー |
+| `localWorkspaceRoot` | `"~/Dev/xserver-sites"` | pull したサイトファイルの保存先（このリポジトリの外） |
+| `servers.<id>.host` | `"sv12345.xsrv.jp"` | XServer ホスト名（`<サーバーID>.xsrv.jp`） |
+| `servers.<id>.port` | `10022` | SSH ポート（XServer は常に `10022`） |
+| `servers.<id>.username` | `"sv12345"` | SSH ユーザー名（サーバー ID と同じ） |
+| `servers.<id>.privateKeyPath` | `"~/.ssh/xserver_sv12345"` | ed25519 秘密鍵のパス |
+| `servers.<id>.passphraseEnv` | `"XSERVER_SV12345_KEY_PASSPHRASE"` | 鍵のパスフレーズを格納する環境変数名（任意） |
+| `servers.<id>.roots.<domain>` | `"/home/sv12345/example.com/public_html"` | ドメインごとのリモートドキュメントルート（絶対パス） |
 
-### SSH Key Setup
+### SSH 鍵のセットアップ
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/xserver_sv12345 -C xserver-sv12345
 ```
 
-Register the public key in XServer Server Panel, then test:
+XServer サーバーパネルで公開鍵を登録してからテスト:
 
 ```bash
 ssh -p 10022 -i ~/.ssh/xserver_sv12345 sv12345@sv12345.xsrv.jp 'pwd'
 ```
 
-### Workspace Layout
+### ワークスペースの構成
 
-Local site workspaces live outside this repository. The expected shape is:
+ローカルのサイトワークスペースはこのリポジトリの外に配置します:
 
 ```text
 ~/Dev/xserver-sites/
@@ -71,53 +71,53 @@ Local site workspaces live outside this repository. The expected shape is:
     shop.example.com/
 ```
 
-Keep this repository for the MCP/CLI source code only.
+このリポジトリは MCP/CLI のソースコード専用です。
 
-## CLI Usage
+## CLI の使い方
 
 ```bash
 node src/cli.js <command> [options]
 ```
 
-### Diagnostics
+### 診断
 
-| Command | Description |
+| コマンド | 説明 |
 |---|---|
-| `doctor` | Check config, SSH keys, and SFTP connectivity |
-| `servers` | List configured server profiles (no connection) |
-| `roots` | List configured domain roots |
-| `--version` | Print version |
+| `doctor` | 設定ファイル、SSH 鍵、SFTP 接続をチェック |
+| `servers` | 設定済みサーバー一覧を表示（接続不要） |
+| `roots` | 設定済みドメインルート一覧を表示 |
+| `--version` | バージョンを表示 |
 
-### File Operations
+### ファイル操作
 
-| Command | Description |
+| コマンド | 説明 |
 |---|---|
-| `ls <domain> [path]` | List remote files |
-| `read <domain> <path>` | Read a remote UTF-8 text file |
-| `write <domain> <path> --from <file>` | Write a remote file (backs up existing by default) |
-| `replace <domain> <path> --find <text> --replace <text>` | Exact text replacement (backs up by default) |
-| `backup <domain> <path>` | Create a timestamped remote backup |
-| `backups <domain> <path>` | List timestamped remote backups for a file |
-| `cleanup-backups <domain> <path> [--keep N]` | Delete old backups, keeping the newest N (default 5) |
+| `ls <domain> [path]` | リモートファイル一覧 |
+| `read <domain> <path>` | リモートの UTF-8 テキストファイルを読み取り |
+| `write <domain> <path> --from <file>` | リモートにファイルを書き込み（既存ファイルは自動バックアップ） |
+| `replace <domain> <path> --find <text> --replace <text>` | テキストの完全一致置換（自動バックアップ） |
+| `backup <domain> <path>` | タイムスタンプ付きリモートバックアップを作成 |
+| `backups <domain> <path>` | ファイルのリモートバックアップ一覧 |
+| `cleanup-backups <domain> <path> [--keep N]` | 古いバックアップを削除し、最新 N 件を保持（デフォルト 5） |
 
-### Workspace Operations
+### ワークスペース操作
 
-| Command | Description |
+| コマンド | 説明 |
 |---|---|
-| `workspace <domain>` | Create the local workspace directory for a domain |
-| `pull <domain> <path>` | Pull a remote file into the local workspace |
-| `push <domain> <path>` | Push a local workspace file to the server (backs up by default) |
+| `workspace <domain>` | ドメイン用のローカルワークスペースを作成 |
+| `pull <domain> <path>` | リモートファイルをローカルワークスペースに取得 |
+| `push <domain> <path>` | ローカルワークスペースのファイルをサーバーに送信（自動バックアップ） |
 
-The workspace pull/push flow refuses `wp-config.php`, uploads, logs, backups, database dumps, and archives by default. Use `--allow-sensitive` only after reviewing the risk.
+pull/push は `wp-config.php`、uploads、logs、backups、データベースダンプ、アーカイブをデフォルトで拒否します。`--allow-sensitive` はリスクを確認してから使用してください。
 
-### Redirect
+### リダイレクト
 
 ```bash
 node src/cli.js redirect old-site.example.com https://new-site.example.com --dry-run
 node src/cli.js redirect old-site.example.com https://new-site.example.com
 ```
 
-This inserts or updates a marked `.htaccess` 301 redirect block:
+`.htaccess` にマーク付き 301 リダイレクトブロックを挿入・更新します:
 
 ```apache
 # BEGIN xserver-files-mcp redirect old-site.example.com
@@ -129,67 +129,67 @@ RewriteRule ^(.*)$ https://new-site.example.com/$1 [R=301,L]
 # END xserver-files-mcp redirect old-site.example.com
 ```
 
-### Common Options
+### 共通オプション
 
-All write commands support `--dry-run` to preview changes without writing. Use `--no-backup` to skip the automatic backup. Use `--server <id>` to target a non-default server.
+すべての書き込みコマンドは `--dry-run` で変更をプレビューできます。`--no-backup` で自動バックアップをスキップ。`--server <id>` でデフォルト以外のサーバーを指定。
 
-## MCP Registration
+## MCP 登録
 
-Add this to your MCP client config (Claude Desktop, VS Code, etc.):
+MCP クライアント（Claude Desktop、VS Code など）の設定に追加:
 
 ```json
 {
   "mcpServers": {
     "xserver-files": {
       "command": "node",
-      "args": ["/ABSOLUTE/PATH/TO/xserver-files-mcp/src/server.js"],
+      "args": ["/絶対パス/xserver-files-mcp/src/server.js"],
       "env": {
-        "XSERVER_FILES_CONFIG": "/HOME/YOU/.config/xserver-files-mcp/config.json"
+        "XSERVER_FILES_CONFIG": "/ホームディレクトリ/.config/xserver-files-mcp/config.json"
       }
     }
   }
 }
 ```
 
-Replace the paths with absolute paths on your machine.
+パスは自分のマシンの絶対パスに置き換えてください。
 
-### MCP Tools
+### MCP ツール一覧
 
-| Tool | Description |
+| ツール | 説明 |
 |---|---|
-| `list_servers` | List configured server profiles |
-| `list_roots` | List domain roots for a profile |
-| `init_site_workspace` | Create the local workspace directory for one domain |
-| `list_files` | List remote files |
-| `read_file` | Read a UTF-8 text file |
-| `pull_file_to_workspace` | Pull one remote text file into the local workspace |
-| `push_file_from_workspace` | Push one local workspace text file to the remote |
-| `backup_file` | Create a timestamped backup next to a remote file |
-| `write_file` | Write a UTF-8 file (backs up existing files by default) |
-| `replace_in_file` | Exact text replacement with backup by default |
-| `set_domain_redirect` | Insert or update a marked `.htaccess` 301 redirect block |
+| `list_servers` | 設定済みサーバー一覧 |
+| `list_roots` | プロファイルのドメインルート一覧 |
+| `init_site_workspace` | ドメイン用のローカルワークスペースを作成 |
+| `list_files` | リモートファイル一覧 |
+| `read_file` | UTF-8 テキストファイルを読み取り |
+| `pull_file_to_workspace` | リモートファイルをローカルワークスペースに取得 |
+| `push_file_from_workspace` | ローカルワークスペースのファイルをリモートに送信 |
+| `backup_file` | リモートファイルのタイムスタンプ付きバックアップを作成 |
+| `write_file` | UTF-8 ファイルを書き込み（既存ファイルは自動バックアップ） |
+| `replace_in_file` | テキストの完全一致置換（自動バックアップ） |
+| `set_domain_redirect` | `.htaccess` にマーク付き 301 リダイレクトブロックを挿入・更新 |
 
-## Multiple Servers
+## 複数サーバー
 
-Add entries under `servers` in your config. Pass `server_id` in MCP calls or `--server` in CLI:
+設定ファイルの `servers` にエントリを追加。MCP では `server_id`、CLI では `--server` で指定:
 
 ```bash
 node src/cli.js --server sv67890 roots
 ```
 
-If omitted, `defaultServer` is used.
+省略時は `defaultServer` が使われます。
 
-## Safety Notes
+## 安全性について
 
-- All paths are resolved under the configured `roots[domain]`. Absolute paths and `..` traversal are rejected.
-- Write operations back up existing files by default.
-- Workspace pull/push excludes high-risk paths by default: `wp-config.php`, uploads, logs, backups, SQL dumps, and archives.
-- `replaceInFile` and `set_domain_redirect` read, transform, and write in separate SFTP operations. Concurrent edits to the same file by another process may be overwritten.
-- Always use `--dry-run` before write operations to preview changes.
-- Keep private keys outside this project directory.
+- すべてのパスは設定済みの `roots[domain]` 配下で解決されます。絶対パスと `..` によるトラバーサルは拒否されます。
+- 書き込み操作は既存ファイルをデフォルトで自動バックアップします。
+- pull/push はリスクの高いパスをデフォルトで除外します: `wp-config.php`、uploads、logs、backups、SQL ダンプ、アーカイブ。
+- `replaceInFile` と `set_domain_redirect` は読み取り・変換・書き込みを別々の SFTP 操作で行います。他のプロセスが同時に同じファイルを編集すると上書きされる可能性があります。
+- 書き込み前に必ず `--dry-run` で変更をプレビューしてください。
+- 秘密鍵はこのプロジェクトディレクトリの外に保管してください。
 
-## Agent Context
+## エージェント向け情報
 
-- Repository operating rules: `AGENTS.md`
-- SFTP file operations skill: `.skills/xserver-files-operator/SKILL.md`
-- XServer panel API skill: `.skills/xserver-mcp-operator/SKILL.md`
+- リポジトリ運用ルール: `AGENTS.md`
+- SFTP ファイル操作スキル: `.skills/xserver-files-operator/SKILL.md`
+- XServer パネル API スキル: `.skills/xserver-mcp-operator/SKILL.md`
