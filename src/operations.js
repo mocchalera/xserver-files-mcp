@@ -80,6 +80,13 @@ export async function listFiles(config, input) {
   });
 }
 
+export async function listBackups(config, input) {
+  const target = resolveBackupTarget(input.path);
+  const listing = await listFiles(config, { ...input, path: target.directory });
+
+  return listing.entries.filter((entry) => isBackupEntryName(entry.name, target.backupPrefix)).map(publicBackupEntry);
+}
+
 export async function readFile(config, input) {
   const { serverId, server, domain, root } = resolveDomainRoot(config, input.server_id, input.domain);
   const relativePath = ensureRelativeFilePath(input.path);
@@ -121,6 +128,30 @@ export async function backupFile(config, input) {
       backup_remote_path: backupRemotePath
     };
   });
+}
+
+export async function cleanupBackups(config, input) {
+  const { server, root } = resolveDomainRoot(config, input.server_id, input.domain);
+  const target = resolveBackupTarget(input.path);
+  const keep = normalizeKeepCount(input.keep);
+  const dryRun = input.dry_run === true;
+  const backups = (await listBackups(config, input)).sort(compareModifyTimeDesc);
+  const kept = backups.slice(0, keep);
+  const deleted = backups.slice(keep);
+
+  if (!dryRun) {
+    await withSftp(server, async (client) => {
+      for (const entry of deleted) {
+        await client.delete(joinRemote(root, backupRelativePath(target.directory, entry.name)));
+      }
+    });
+  }
+
+  return {
+    kept,
+    deleted,
+    dry_run: dryRun
+  };
 }
 
 export async function writeFile(config, input) {
@@ -523,6 +554,54 @@ function trimTrailingSlash(value) {
 
 function countOccurrences(content, needle) {
   return content.split(needle).length - 1;
+}
+
+function resolveBackupTarget(relativePath) {
+  const normalized = ensureRelativeFilePath(relativePath);
+  const directory = path.posix.dirname(normalized) || ".";
+  const basename = path.posix.basename(normalized);
+  const backupPrefix = basename.startsWith(".") ? basename : `.${basename}`;
+
+  return { directory, basename, backupPrefix };
+}
+
+function isBackupEntryName(name, backupPrefix) {
+  return (
+    typeof name === "string" &&
+    !name.includes("/") &&
+    !name.includes("\\") &&
+    name.startsWith(`${backupPrefix}.`) &&
+    name.endsWith(".bak")
+  );
+}
+
+function publicBackupEntry(entry) {
+  return {
+    name: entry.name,
+    size: entry.size,
+    modify_time: entry.modify_time
+  };
+}
+
+function normalizeKeepCount(value) {
+  const keep = value === undefined ? 5 : Number(value);
+  if (!Number.isInteger(keep) || keep < 0) {
+    throw new Error("keep must be a non-negative integer.");
+  }
+  return keep;
+}
+
+function compareModifyTimeDesc(left, right) {
+  return timestamp(right.modify_time) - timestamp(left.modify_time);
+}
+
+function timestamp(value) {
+  const parsed = Date.parse(value || "");
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function backupRelativePath(directory, name) {
+  return directory === "." ? name : `${directory}/${name}`;
 }
 
 function withoutContent(result) {

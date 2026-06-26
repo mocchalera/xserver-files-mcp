@@ -4,7 +4,9 @@ import { Command } from "commander";
 import { ConfigError, expandHome, loadConfig } from "./config.js";
 import {
   backupFile,
+  cleanupBackups,
   initSiteWorkspace,
+  listBackups,
   listFiles,
   listRoots,
   listServers,
@@ -186,6 +188,30 @@ program
   .option("--label <label>", "Backup label")
   .action(async (domain, path, options) =>
     printJson(await backupFile(config(), { ...baseInput(domain, path), label: options.label }))
+  );
+
+program
+  .command("backups")
+  .description("List timestamped remote backups for a file")
+  .argument("<domain>", "Configured domain")
+  .argument("<path>", "File path relative to the domain root")
+  .action(async (domain, path) => printJson(await listBackups(config(), baseInput(domain, path))));
+
+program
+  .command("cleanup-backups")
+  .description("Delete old timestamped remote backups for a file")
+  .argument("<domain>", "Configured domain")
+  .argument("<path>", "File path relative to the domain root")
+  .option("--keep <number>", "Number of newest backups to keep. Defaults to 5.")
+  .option("--dry-run", "Return what would be deleted without deleting")
+  .action(async (domain, path, options) =>
+    printJson(
+      await cleanupBackups(config(), {
+        ...baseInput(domain, path),
+        keep: options.keep,
+        dry_run: options.dryRun
+      })
+    )
   );
 
 program
