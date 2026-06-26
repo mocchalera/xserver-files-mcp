@@ -9,7 +9,10 @@ export async function withSftp(server, callback) {
     host: server.host,
     port: server.port,
     username: server.username,
-    privateKey: fs.readFileSync(privateKeyPath)
+    privateKey: fs.readFileSync(privateKeyPath),
+    readyTimeout: 10000,
+    keepaliveInterval: 5000,
+    keepaliveCountMax: 3
   };
 
   if (server.passphraseEnv && process.env[server.passphraseEnv]) {
