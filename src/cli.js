@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import { Command } from "commander";
-import { loadConfig } from "./config.js";
+import { ConfigError, expandHome, loadConfig } from "./config.js";
 import {
   backupFile,
   initSiteWorkspace,
@@ -15,6 +15,7 @@ import {
   setDomainRedirect,
   writeFile
 } from "./operations.js";
+import { withSftp } from "./sftp.js";
 
 const program = new Command();
 
@@ -40,10 +41,61 @@ function printJson(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
+function printCheck(passed, message) {
+  process.stdout.write(`[${passed ? "PASS" : "FAIL"}] ${message}\n`);
+}
+
+function displayConfigPath() {
+  return program.opts().config || process.env.XSERVER_FILES_CONFIG || "~/.config/xserver-files-mcp/config.json";
+}
+
 program
   .command("servers")
   .description("List configured server profiles")
   .action(() => printJson(listServers(config())));
+
+program
+  .command("doctor")
+  .description("Check config, SSH key files, and SFTP connectivity")
+  .action(async () => {
+    const configPath = displayConfigPath();
+    let loadedConfig;
+    let hasFailures = false;
+
+    try {
+      loadedConfig = config();
+      printCheck(true, `Config loaded: ${configPath}`);
+    } catch (error) {
+      if (error instanceof ConfigError) {
+        printCheck(false, `Config loaded: ${configPath} — ${error.message}`);
+        process.exitCode = 1;
+        return;
+      }
+      throw error;
+    }
+
+    for (const [serverId, server] of Object.entries(loadedConfig.servers)) {
+      const keyPath = server.privateKeyPath;
+      const keyExists = fs.existsSync(expandHome(keyPath));
+      hasFailures = hasFailures || !keyExists;
+      printCheck(keyExists, `SSH key exists: ${serverId} (${keyPath})`);
+    }
+
+    for (const [serverId, server] of Object.entries(loadedConfig.servers)) {
+      try {
+        await withSftp(server, async (client) => {
+          await client.list("/");
+          return true;
+        });
+        printCheck(true, `SFTP connection: ${serverId}`);
+      } catch (error) {
+        hasFailures = true;
+        printCheck(false, `SFTP connection: ${serverId} — ${error.message}`);
+      }
+    }
+
+    process.exitCode = hasFailures ? 1 : 0;
+  });
 
 program
   .command("roots")
